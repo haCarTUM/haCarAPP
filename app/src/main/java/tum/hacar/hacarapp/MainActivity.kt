@@ -25,16 +25,21 @@ class MainActivity : AppCompatActivity() {
 
         appendLog("App is starting!")
 
+        layout.numberPicker.maxValue = 5
+        layout.numberPicker.minValue = 1
+        layout.numberPicker.wrapSelectorWheel = true
+
     }
 
-    fun appendLog(text: String) {
+    private fun appendLog(text: String) {
 
         val sdf = SimpleDateFormat("HH:mm:ss")
-        val date = Date()
-        var dateString = sdf.format(date)
+        val dateString = sdf.format(Date())
 
         layout.textViewLogs.append(dateString + ": " + text + "\n");
+    }
 
+    fun sendDataToServer(data : String){
 
     }
 }
