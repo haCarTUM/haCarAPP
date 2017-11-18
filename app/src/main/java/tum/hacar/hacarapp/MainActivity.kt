@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (drivingBlobs.isEmpty()) {
             drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample)))
         } else {
-            if (drivingBlobs.last().driveSamples.size < 100) {
+            if (drivingBlobs.last().driveSamples.size < 500) {
                 drivingBlobs.last().driveSamples.add(sample);
             } else {
                 //Last Blob is finished

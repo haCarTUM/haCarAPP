@@ -56,7 +56,6 @@ class ServerConnector (val parent: MainActivity) {
                 val json = gson.toJson(data)
                 parent.appendLog("Sending Blob: " + json)
 
-
                 blob.uploadText(json)
             }
 
