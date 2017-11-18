@@ -39,7 +39,23 @@
         android:layout_height="0dp"
         android:layout_weight="30"
         android:id="@+id/sensorData"
-        />
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textViewAcceleration"
+            android:text="Acceleration"
+            android:layout_margin="10dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textViewGyro"
+            android:text="Gyro"
+            android:layout_margin="10dp"/>
+
+    </LinearLayout>
 
 
 
