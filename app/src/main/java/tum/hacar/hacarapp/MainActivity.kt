@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         layout.numberPicker.minValue = 1
         layout.numberPicker.wrapSelectorWheel = true
 
-        dataConnector.sendDriveData(DrivingBlob(3, 5, mutableListOf<DriveSample>(DriveSample(3f,5f,3f))))
+        dataConnector.sendDriveData(DrivingBlob(3, 5, mutableListOf<DriveSample>(DriveSample(3f, 5f, 3f))))
 
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         acceSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
@@ -72,17 +72,22 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     }
 
-    fun appendDataToBlob(sample: DriveSample){
-        if(drivingBlobs.isEmpty()){
-            drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample) ))
-        }else{if(drivingBlobs.last().driveSamples.size < 100){
-            drivingBlobs.last().driveSamples.add(sample);
-        }else{
-            //Last Blob is finished
+    fun appendDataToBlob(sample: DriveSample) {
+        if (drivingBlobs.isEmpty()) {
+            drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample)))
+        } else {
+            if (drivingBlobs.last().driveSamples.size < 100) {
+                drivingBlobs.last().driveSamples.add(sample);
+            } else {
+                //Last Blob is finished
 
-            drivingBlobs.last().endTime = Date()
+                drivingBlobs.last().endTime = Date()
 
-            sendDataToServer(drivingBlobs.last())
+                sendDataToServer(drivingBlobs.last())
+            }
+        }
+    }
+
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_LINEAR_ACCELERATION && event.values.max()!! > 0.1F) {
             createAcceSample(event.values[0], event.values[1], event.values[2])
@@ -99,23 +104,5 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     fun createGyroSample(gyX: Float, gyY: Float, gyZ: Float) {
         textViewGyro.text = "Created gyro sample with " + gyX + " " + gyY + " " + gyZ
         appendDataToBlob(DriveSample(gyroX = gyX, gyroY = gyY, gyroZ = gyZ))
-    }
-
-
-    fun appendDataToBlob(sample: DriveSample) {
-        if (drivingBlobs.isEmpty()) {
-            drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample)))
-        } else {
-            if (drivingBlobs.last().driveSamples.size < 100) {
-                drivingBlobs.last().driveSamples.add(sample);
-            } else {
-                //Last Blob is finished
-                sendDataToServer(drivingBlobs.last())
-
-                //Create new blob
-                drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample)))
-            }
-        }
-
     }
 }
