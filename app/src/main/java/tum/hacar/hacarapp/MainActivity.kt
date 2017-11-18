@@ -8,6 +8,7 @@ import android.hardware.SensorManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
+import android.util.Log
 import android.widget.LinearLayout
 import java.text.SimpleDateFormat
 import java.util.*
@@ -64,19 +65,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         layout.textViewLogs.movementMethod = ScrollingMovementMethod()
 
-        dataConnector.sendDriveData(DrivingBlob(3, 5, mutableListOf<DriveSample>(DriveSample(3f, 5f, 3f))))
-
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         acceSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
         gyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
         mSensorManager.registerListener(this,
                 mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
-                200_000)
+                SensorManager.SENSOR_DELAY_NORMAL)
 
         mSensorManager.registerListener(this,
                 mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
-                200_000)
+                SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     fun appendLog(text: String) {
@@ -86,6 +85,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     fun sendDataToServer(dataBlob: DrivingBlob) {
         if (started) {
             dataConnector.sendDriveData(dataBlob)
+            Log.e("Send", "Send Data to server!")
         }
     }
 
@@ -97,14 +97,16 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (drivingBlobs.isEmpty()) {
             drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample)))
         } else {
-            if (drivingBlobs.last().driveSamples.size < 100) {
+            if (drivingBlobs.last().driveSamples.size < 500) {
                 drivingBlobs.last().driveSamples.add(sample)
+
             } else {
                 //Last Blob is finished
 
                 drivingBlobs.last().endTime = Date()
 
                 sendDataToServer(drivingBlobs.last())
+                Log.e("Blob", "Finished blob")
             }
         }
     }

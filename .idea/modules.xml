@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://C:\Users\steph\Desktop\GitKraken-Projekte\haCarAPP\app\app.iml" filepath="C:\Users\steph\Desktop\GitKraken-Projekte\haCarAPP\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/haCarAPP.iml" filepath="$PROJECT_DIR$/haCarAPP.iml" />
     </modules>
   </component>
