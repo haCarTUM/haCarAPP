@@ -14,6 +14,9 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 import tum.hacar.data.DriveSample
 import tum.hacar.data.DrivingBlob
+import tum.hacar.server.ServerConnector
+import tum.hacar.util.dateToString
+import java.sql.Blob
 
 
 class MainActivity : AppCompatActivity(), SensorEventListener {
@@ -26,6 +29,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var ID: Int = 1
     private var drivingBlobs = mutableListOf<DrivingBlob>()
     private var drivingWildness = 0;
+    private var dataConnector = ServerConnector(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +44,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         layout.numberPicker.maxValue = 5
         layout.numberPicker.minValue = 1
         layout.numberPicker.wrapSelectorWheel = true
+
+        dataConnector.sendDriveData(DrivingBlob(3, 5, mutableListOf<DriveSample>(DriveSample(3f,5f,3f))))
 
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         acceSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
@@ -56,10 +62,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     fun appendLog(text: String) {
 
-        val sdf = SimpleDateFormat("HH:mm:ss")
-        val dateString = sdf.format(Date())
-
-        layout.textViewLogs.append(dateString + ": " + text + "\n");
+        layout.textViewLogs.append(dateToString(Date()) + ": " + text + "\n");
     }
 
     fun sendDataToServer(dataBlob: DrivingBlob) {
@@ -69,6 +72,17 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     }
 
+    fun appendDataToBlob(sample: DriveSample){
+        if(drivingBlobs.isEmpty()){
+            drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample) ))
+        }else{if(drivingBlobs.last().driveSamples.size < 100){
+            drivingBlobs.last().driveSamples.add(sample);
+        }else{
+            //Last Blob is finished
+
+            drivingBlobs.last().endTime = Date()
+
+            sendDataToServer(drivingBlobs.last())
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_LINEAR_ACCELERATION && event.values.max()!! > 0.1F) {
             createAcceSample(event.values[0], event.values[1], event.values[2])
