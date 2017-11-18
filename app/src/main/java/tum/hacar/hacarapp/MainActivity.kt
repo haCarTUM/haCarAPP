@@ -7,11 +7,14 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.widget.LinearLayout
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
+import org.jetbrains.anko.sdk25.coroutines.onClick
+import org.jetbrains.anko.themedNumberPicker
 import tum.hacar.data.DriveSample
 import tum.hacar.data.DrivingBlob
 import tum.hacar.server.ServerConnector
@@ -31,6 +34,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var drivingWildness = 0;
     private var dataConnector = ServerConnector(this)
 
+    private var started = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -44,6 +49,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         layout.numberPicker.maxValue = 5
         layout.numberPicker.minValue = 1
         layout.numberPicker.wrapSelectorWheel = true
+
+        layout.btn_startStop.onClick {
+            started = !started
+
+            if (started) {
+                layout.btn_startStop.text = "Stop"
+                layout.numberPicker.isEnabled = false
+            } else {
+                layout.btn_startStop.text = "Start"
+                layout.numberPicker.isEnabled = true
+            }
+        }
+
+        layout.textViewLogs.movementMethod = ScrollingMovementMethod()
 
         dataConnector.sendDriveData(DrivingBlob(3, 5, mutableListOf<DriveSample>(DriveSample(3f, 5f, 3f))))
 
@@ -61,11 +80,13 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun appendLog(text: String) {
-
         layout.textViewLogs.append(dateToString(Date()) + ": " + text + "\n");
     }
 
     fun sendDataToServer(dataBlob: DrivingBlob) {
+        if (started) {
+            dataConnector.sendDriveData(dataBlob)
+        }
     }
 
     override fun onAccuracyChanged(p0: Sensor?, p1: Int) {

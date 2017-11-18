@@ -26,10 +26,10 @@ import tum.hacar.util.dateToString
 /**
  * demo client
  */
-class ServerConnector (val parent: MainActivity) {
+class ServerConnector(val parent: MainActivity) {
 
     // Define the connection-string with your values
- val storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=hacartumblob;AccountKey=hzKpFlg6rpW9jeMxo1UO8VYckLqEGrsEV1yoWxb2sGfsZOFDfCY4DhFcqJHWAlpvHEPgYr1wNEKOAP+By5rc5A==;EndpointSuffix=core.windows.net"
+    val storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=hacartumblob;AccountKey=hzKpFlg6rpW9jeMxo1UO8VYckLqEGrsEV1yoWxb2sGfsZOFDfCY4DhFcqJHWAlpvHEPgYr1wNEKOAP+By5rc5A==;EndpointSuffix=core.windows.net"
 
     fun sendDriveData(data: DrivingBlob) {
         try {
@@ -54,11 +54,10 @@ class ServerConnector (val parent: MainActivity) {
 
                 // Format to JSON
                 val json = gson.toJson(data)
-                parent.appendLog("Sending Blob: " + json)
+                //parent.appendLog("Sending Blob: " + json)
 
                 blob.uploadText(json)
             }
-
 
 
         } catch (e: Exception) {
