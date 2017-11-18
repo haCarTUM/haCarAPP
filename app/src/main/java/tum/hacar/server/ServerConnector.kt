@@ -63,8 +63,7 @@ class ServerConnector(val parent: MainActivity) {
         } catch (e: Exception) {
             // Output the stack trace.
             e.printStackTrace()
+            parent.appendLog(e.stackTrace.toString())
         }
-
     }
-
 }
