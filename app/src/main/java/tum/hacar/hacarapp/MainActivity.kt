@@ -31,7 +31,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun appendLog(text: String) {
+    fun appendLog(text: String) {
 
         val sdf = SimpleDateFormat("HH:mm:ss")
         val dateString = sdf.format(Date())
