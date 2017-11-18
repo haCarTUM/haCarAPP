@@ -49,15 +49,15 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         mSensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         acceSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION)
-        gyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+        gyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE)
 
         mSensorManager.registerListener(this,
                 mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
-                10)
+                SensorManager.SENSOR_DELAY_NORMAL)
 
         mSensorManager.registerListener(this,
-                mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR),
-                10)
+                mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
+                SensorManager.SENSOR_DELAY_NORMAL)
     }
 
     fun appendLog(text: String) {
@@ -89,20 +89,20 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent) {
-        if (event.sensor.type == Sensor.TYPE_LINEAR_ACCELERATION && event.values.max()!! > 0.1F) {
+        if (event.sensor.type == Sensor.TYPE_LINEAR_ACCELERATION) {
             createAcceSample(event.values[0], event.values[1], event.values[2])
-        } else if (event.sensor.type == Sensor.TYPE_ROTATION_VECTOR && event.values.average() >= 0.2F) {
+        } else if (event.sensor.type == Sensor.TYPE_GYROSCOPE) {
             createGyroSample(event.values[0], event.values[1], event.values[2])
         }
     }
 
     fun createAcceSample(acX: Float, acY: Float, acZ: Float) {
-        textViewAcceleration.text = "Created acceleration sample with " + acX + " " + acY + " " + acZ
+        textViewAcceleration.text = "Created acceleration sample with\n" + acX + "\n" + acY + "\n" + acZ
         appendDataToBlob(DriveSample(acceX = acX, acceY = acY, acceZ = acZ))
     }
 
     fun createGyroSample(gyX: Float, gyY: Float, gyZ: Float) {
-        textViewGyro.text = "Created gyro sample with " + gyX + " " + gyY + " " + gyZ
+        textViewGyro.text = "Created gyro sample with\n" + gyX + "\n" + gyY + "\n" + gyZ
         appendDataToBlob(DriveSample(gyroX = gyX, gyroY = gyY, gyroZ = gyZ))
     }
 }
