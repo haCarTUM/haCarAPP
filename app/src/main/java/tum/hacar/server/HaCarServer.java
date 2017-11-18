@@ -46,5 +46,14 @@ public interface HaCarServer {
      *
      * @param policy the refunding policy
      */
-    void setPolicy(InsuranceCompanyPolicy policy);
+    void setPolicy(@WebParam(name = "insurance refund policy") InsuranceCompanyPolicy policy);
+
+    /**
+     * @param x  accelerateX
+     * @param y  accelerateY
+     * @param z  accelerateZ
+     * @param id the ID of the car (cf. addVehicle)
+     */
+    void addDriveData(@WebParam(name = "xAccel") float x, @WebParam(name = "yAccel") float y,
+                      @WebParam(name = "zAccel") float z, @WebParam(name = "vehicleID") int id);
 }
