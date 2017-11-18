@@ -10,10 +10,17 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
+import tum.hacar.data.DriveSample
+import tum.hacar.data.DrivingBlob
+import java.sql.Blob
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var layout: LinearLayout
+
+    private var ID : Int = 1
+    private var drivingBlobs = mutableListOf<DrivingBlob>()
+    private var drivingWildness = 0;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +46,23 @@ class MainActivity : AppCompatActivity() {
         layout.textViewLogs.append(dateString + ": " + text + "\n");
     }
 
-    fun sendDataToServer(data : String){
+    fun sendDataToServer(dataBlob: DrivingBlob){
+
+    }
+
+    fun appendDataToBlob(sample: DriveSample){
+        if(drivingBlobs.isEmpty()){
+            drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample) ))
+        }else{if(drivingBlobs.last().driveSamples.size < 100){
+            drivingBlobs.last().driveSamples.add(sample);
+        }else{
+            //Last Blob is finished
+            sendDataToServer(drivingBlobs.last())
+
+            //Create new blob
+            drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample) ))
+        }
+        }
 
     }
 }

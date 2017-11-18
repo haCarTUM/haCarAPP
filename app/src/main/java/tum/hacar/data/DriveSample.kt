@@ -1,13 +1,12 @@
-package tum.hacar.server
+package tum.hacar.data
 
 /**
  * Created by f.baader on 18.11.2017.
  */
-data class DriveData (
+data class DriveSample(
         var gyroX: Float,
         var gyroY: Float,
-        var gyroZ: Float,
-        var id: Int
+        var gyroZ: Float
 ){
 
 }
