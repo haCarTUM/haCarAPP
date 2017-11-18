@@ -12,6 +12,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
 import tum.hacar.data.DriveSample
 import tum.hacar.data.DrivingBlob
+import tum.hacar.server.ServerConnector
+import tum.hacar.util.dateToString
 import java.sql.Blob
 
 class MainActivity : AppCompatActivity() {
@@ -21,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     private var ID : Int = 1
     private var drivingBlobs = mutableListOf<DrivingBlob>()
     private var drivingWildness = 0;
+    private var dataConnector = ServerConnector(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,14 +39,13 @@ class MainActivity : AppCompatActivity() {
         layout.numberPicker.minValue = 1
         layout.numberPicker.wrapSelectorWheel = true
 
+        dataConnector.sendDriveData(DrivingBlob(3, 5, mutableListOf<DriveSample>(DriveSample(3f,5f,3f))))
+
     }
 
     fun appendLog(text: String) {
 
-        val sdf = SimpleDateFormat("HH:mm:ss")
-        val dateString = sdf.format(Date())
-
-        layout.textViewLogs.append(dateString + ": " + text + "\n");
+        layout.textViewLogs.append(dateToString(Date()) + ": " + text + "\n");
     }
 
     fun sendDataToServer(dataBlob: DrivingBlob){
@@ -57,6 +59,9 @@ class MainActivity : AppCompatActivity() {
             drivingBlobs.last().driveSamples.add(sample);
         }else{
             //Last Blob is finished
+
+            drivingBlobs.last().endTime = Date()
+
             sendDataToServer(drivingBlobs.last())
 
             //Create new blob
