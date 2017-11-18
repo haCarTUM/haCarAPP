@@ -72,11 +72,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         mSensorManager.registerListener(this,
                 mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
-                SensorManager.SENSOR_DELAY_NORMAL)
+                200_000)
 
         mSensorManager.registerListener(this,
                 mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
-                SensorManager.SENSOR_DELAY_NORMAL)
+                200_000)
     }
 
     fun appendLog(text: String) {
@@ -97,8 +97,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         if (drivingBlobs.isEmpty()) {
             drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample)))
         } else {
-            if (drivingBlobs.last().driveSamples.size < 500) {
-                drivingBlobs.last().driveSamples.add(sample);
+            if (drivingBlobs.last().driveSamples.size < 100) {
+                drivingBlobs.last().driveSamples.add(sample)
             } else {
                 //Last Blob is finished
 
