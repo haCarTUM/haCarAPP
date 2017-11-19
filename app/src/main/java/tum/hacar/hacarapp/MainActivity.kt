@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.util.Log
+import android.view.WindowManager
 import android.widget.LinearLayout
 import java.text.SimpleDateFormat
 import java.util.*
@@ -35,7 +36,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     private var drivingBlobs = mutableListOf<DrivingBlob>()
     private var drivingWildness = 0
         get() = layout.numberPicker.value
-    private var dataConnector = ServerConnector(this)
+
+    private lateinit var dataConnector : ServerConnector
 
     private var started = false
 
@@ -43,7 +45,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         layout = findViewById(R.id.mainLayout)
+
+        dataConnector =  ServerConnector(this)
 
         this.title = "HaCarTUM - Safe driving saves Money"
 
@@ -62,6 +68,7 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
             } else {
                 layout.btn_startStop.text = "Start"
                 layout.numberPicker.isEnabled = true
+                drivingBlobs.clear()
             }
         }
 
@@ -73,13 +80,11 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
         mSensorManager.registerListener(this,
                 mSensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION),
-                SensorManager.SENSOR_DELAY_NORMAL)
+                SensorManager.SENSOR_DELAY_FASTEST)
 
         mSensorManager.registerListener(this,
                 mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
-                SensorManager.SENSOR_DELAY_NORMAL)
-
-
+                SensorManager.SENSOR_DELAY_FASTEST)
     }
 
     fun appendLog(text: String) {
@@ -126,11 +131,13 @@ override fun onSensorChanged(event: SensorEvent) {
 }
 
 fun createAcceSample(acX: Float, acY: Float, acZ: Float) {
+    if(!started) return
     textViewAcceleration.text = "Created acceleration sample with\n" + acX + "\n" + acY + "\n" + acZ
     appendDataToBlob(DriveSample(acceX = acX, acceY = acY, acceZ = acZ))
 }
 
 fun createGyroSample(gyX: Float, gyY: Float, gyZ: Float) {
+    if(!started) return
     textViewGyro.text = "Created gyro sample with\n" + gyX + "\n" + gyY + "\n" + gyZ
     appendDataToBlob(DriveSample(gyroX = gyX, gyroY = gyY, gyroZ = gyZ))
 }

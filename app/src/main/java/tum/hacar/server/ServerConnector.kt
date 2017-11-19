@@ -25,6 +25,12 @@ import tum.hacar.util.dateToString
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.thread
+import android.content.Context.MODE_PRIVATE
+import android.content.SharedPreferences
+import android.R.id.edit
+import android.annotation.SuppressLint
+import android.os.Handler
+import com.google.gson.reflect.TypeToken
 
 
 /**
@@ -35,43 +41,53 @@ class ServerConnector(val parent: MainActivity) {
     // Define the connection-string with your values
     val storageConnectionString = "DefaultEndpointsProtocol=https;AccountName=hacartumfeature9f6f;AccountKey=6GBND5H+oWbcGS21YPX6Rj0odXrm6PheymJWOkWbfopFlrpeFeBIvQ6DJzwSJXjcQ3wFNVtp0ruwZeG3m//Ddw==;EndpointSuffix=core.windows.net"
 
-    val container: CloudBlobContainer;
+    lateinit var container: CloudBlobContainer;
 
-    val gson: Gson;
+    lateinit var gson: Gson;
 
-    val queu : ConcurrentLinkedQueue<DrivingBlob> = ConcurrentLinkedQueue()
+    val queu: ConcurrentLinkedQueue<DrivingBlob> = ConcurrentLinkedQueue()
 
     init {
-        // Retrieve storage account from connection-string.
-        val storageAccount = CloudStorageAccount.parse(storageConnectionString)
+        doAsync {
+            // Retrieve storage account from connection-string.
+            val storageAccount = CloudStorageAccount.parse(storageConnectionString)
 
-        // Create the blob client.
-        val blobClient = storageAccount.createCloudBlobClient()
+            // Create the blob client.
+            val blobClient = storageAccount.createCloudBlobClient()
 
-        // Retrieve reference to a previously created container.
-        container = blobClient.getContainerReference("main")
+            // Retrieve reference to a previously created container.
+            container = blobClient.getContainerReference("main")
 
-        // Configure GSON
-        val gsonBuilder = GsonBuilder()
-        gson = gsonBuilder.create()
+            // Configure GSON
+            val gsonBuilder = GsonBuilder()
+            gson = gsonBuilder.create()
 
-        runThread()
+            //load Data
+            loadsavedData()
+
+            runThread()
+        }
+
+
     }
-
 
 
     fun sendDriveData(data: DrivingBlob) {
-       queu.add(data)
+        queu.add(data)
+        try {
+            saveDataToDisk(queu.toList())
+        } catch (e: Exception) {
+        }
+
     }
 
-    fun runThread(){
-        try {
-            thread (start = true, priority = Thread.MAX_PRIORITY){
+    fun runThread() {
 
-                while(true){
-                    if(!queu.isEmpty()){
-
-                        var data =  queu.poll()
+        thread(start = true, priority = Thread.MAX_PRIORITY) {
+            while (true) {
+                if (!queu.isEmpty()) {
+                    try {
+                        val data = queu.poll()
                         // Create or overwrite the "myimage.jpg" blob with contents from a local file.
                         val blob = container.getBlockBlobReference("blob-" + data.id + "-" + dateToString(data.startTime) + ".json")
 
@@ -81,16 +97,60 @@ class ServerConnector(val parent: MainActivity) {
                         blob.uploadText(json)
 
                         Log.e("Send", "Sent Data to server!")
+
+                        saveDataToDisk(queu.toList())
+
+                    } catch (e: Exception) {
+                        // Output the stack trace.b
+                        e.printStackTrace()
+
+                        parent.runOnUiThread {
+                            parent.appendLog(e.message!!)
+                        }
+
+
                     }
                 }
-
-
-
             }
-        } catch (e: Exception) {
-            // Output the stack trace.
-            e.printStackTrace()
-            parent.appendLog(e.stackTrace.toString())
+
+
         }
+
+    }
+
+
+    fun saveDataToDisk(blobs: List<DrivingBlob>) {
+        // Format to JSON
+        val json = gson.toJson(blobs)
+
+        val myPrefs = parent.getSharedPreferences("myPrefs", MODE_PRIVATE)
+        val e = myPrefs.edit().apply {
+            putString("blobs", json) // add or overwrite someValue
+            commit()
+        } // this saves to disk and notifies observers
+
+        parent.runOnUiThread {
+            parent.appendLog("Saving data... In Queue: " + blobs.size)
+        }
+
+
+    }
+
+    fun loadsavedData() {
+        val myPrefs = parent.getSharedPreferences("myPrefs", MODE_PRIVATE)
+
+        val json = myPrefs.getString("blobs", "");
+
+        val targetClassType = object : TypeToken<ArrayList<DrivingBlob>>() {}.type
+        var blobs = Gson().fromJson<List<DrivingBlob>>(json, targetClassType)
+
+        blobs?.forEach { queu.add(it) }
+
+        parent.runOnUiThread {
+            parent.appendLog("Found " + blobs?.size + " old Blobs to sent.")
+        }
+
+
+
     }
 }
