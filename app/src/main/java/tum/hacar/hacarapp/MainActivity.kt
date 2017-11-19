@@ -14,6 +14,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.activity_main.view.*
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.sdk25.coroutines.onClick
 import org.jetbrains.anko.themedNumberPicker
 import tum.hacar.data.DriveSample
@@ -32,7 +33,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
 
     private var ID: Int = 1
     private var drivingBlobs = mutableListOf<DrivingBlob>()
-    private var drivingWildness = 0;
+    private var drivingWildness = 0
+        get() = layout.numberPicker.value
     private var dataConnector = ServerConnector(this)
 
     private var started = false
@@ -76,6 +78,8 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         mSensorManager.registerListener(this,
                 mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE),
                 SensorManager.SENSOR_DELAY_NORMAL)
+
+
     }
 
     fun appendLog(text: String) {
@@ -85,7 +89,6 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     fun sendDataToServer(dataBlob: DrivingBlob) {
         if (started) {
             dataConnector.sendDriveData(dataBlob)
-            Log.e("Send", "Send Data to server!")
         }
     }
 
@@ -94,38 +97,41 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     fun appendDataToBlob(sample: DriveSample) {
+
+        if(!started) return
+
         if (drivingBlobs.isEmpty()) {
             drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample)))
+
+        } else if (drivingBlobs.last().driveSamples.size < 500) {
+            drivingBlobs.last().driveSamples.add(sample)
+
         } else {
-            if (drivingBlobs.last().driveSamples.size < 500) {
-                drivingBlobs.last().driveSamples.add(sample)
+            //Last Blob is finished
+            drivingBlobs.last().endTime = Date()
 
-            } else {
-                //Last Blob is finished
+            sendDataToServer(drivingBlobs.last())
+            Log.e("Blob", "Finished blob")
 
-                drivingBlobs.last().endTime = Date()
-
-                sendDataToServer(drivingBlobs.last())
-                Log.e("Blob", "Finished blob")
-            }
+            drivingBlobs.add(DrivingBlob(this.ID, this.drivingWildness, mutableListOf(sample)))
         }
-    }
+}
 
-    override fun onSensorChanged(event: SensorEvent) {
-        if (event.sensor.type == Sensor.TYPE_LINEAR_ACCELERATION) {
-            createAcceSample(event.values[0], event.values[1], event.values[2])
-        } else if (event.sensor.type == Sensor.TYPE_GYROSCOPE) {
-            createGyroSample(event.values[0], event.values[1], event.values[2])
-        }
+override fun onSensorChanged(event: SensorEvent) {
+    if (event.sensor.type == Sensor.TYPE_LINEAR_ACCELERATION) {
+        createAcceSample(event.values[0], event.values[1], event.values[2])
+    } else if (event.sensor.type == Sensor.TYPE_GYROSCOPE) {
+        createGyroSample(event.values[0], event.values[1], event.values[2])
     }
+}
 
-    fun createAcceSample(acX: Float, acY: Float, acZ: Float) {
-        textViewAcceleration.text = "Created acceleration sample with\n" + acX + "\n" + acY + "\n" + acZ
-        appendDataToBlob(DriveSample(acceX = acX, acceY = acY, acceZ = acZ))
-    }
+fun createAcceSample(acX: Float, acY: Float, acZ: Float) {
+    textViewAcceleration.text = "Created acceleration sample with\n" + acX + "\n" + acY + "\n" + acZ
+    appendDataToBlob(DriveSample(acceX = acX, acceY = acY, acceZ = acZ))
+}
 
-    fun createGyroSample(gyX: Float, gyY: Float, gyZ: Float) {
-        textViewGyro.text = "Created gyro sample with\n" + gyX + "\n" + gyY + "\n" + gyZ
-        appendDataToBlob(DriveSample(gyroX = gyX, gyroY = gyY, gyroZ = gyZ))
-    }
+fun createGyroSample(gyX: Float, gyY: Float, gyZ: Float) {
+    textViewGyro.text = "Created gyro sample with\n" + gyX + "\n" + gyY + "\n" + gyZ
+    appendDataToBlob(DriveSample(gyroX = gyX, gyroY = gyY, gyroZ = gyZ))
+}
 }
